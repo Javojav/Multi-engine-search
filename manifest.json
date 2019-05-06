@@ -1,0 +1,24 @@
+{
+
+  "manifest_version": 2,
+  "name": "Multi engine search",
+  "version": "1.0",
+
+  "description": "Search on Multiple search engines.",
+  "homepage_url": "https://github.com/Javojav/Multi-engine-search",
+
+  "icons": {
+    "48": "icons/icon.png"
+  },
+
+  "permissions": [
+    "search"
+  ],
+
+  "browser_action": {
+      "default_icon": "icons/icon.png",
+      "default_title": "Multi engine search",
+      "default_popup": "popup/search.html"
+    }
+
+}
