@@ -1,27 +1,6 @@
-browser.search.get().then(installedEngines);
+document.getElementById("searchbox").focus();
 
-let engineselection = [];
-
-function search(tab) {
-  for (selected of engineselection) {
-    browser.search.search({
-      query: document.getElementById("searchbox").value,
-      engine: selected,
-      tabId: tab.id
-    });
-  }
-}
-
-browser.browserAction.onClicked.addListener(search);
-
-function saveselection() {
-  try {
-    localStorage.removeItem('defaultengines');
-  } catch {}
-    localStorage.setItem('defaultengines', engineselection);
-}
-
-function installedEngines(engines) {
+browser.search.get().then(engines => {
   for (engine of engines) {
     let checkbox = document.createElement("INPUT");
     checkbox.type = "checkbox";
@@ -31,32 +10,49 @@ function installedEngines(engines) {
       for (eng of defaultengines) {
         if (engine.name == eng) checkbox.checked = true;
       }
-    }
-    catch {}
-
+    } catch {}
     let label = document.createElement('label');
     label.appendChild(document.createTextNode(engine.name));
     document.getElementById("boxes").appendChild(checkbox);
     document.getElementById("boxes").appendChild(label);
-
-    let br = document.createElement("BR");
-    document.getElementById("boxes").appendChild(br)
+    document.getElementById("boxes").appendChild(document.createElement("BR"))
   }
+});
+
+const search = tab => {
+  browser.tabs.query({active: true, currentWindow: true})
+  .then(() => {
+    for (selected of engineselection()) {
+      browser.search.search({
+          query: document.getElementById("searchbox").value,
+          engine: selected,
+        });
+      }
+    }
+  );
 }
 
-document.addEventListener("click", (e) => {
-  engineselection = [];
+const engineselection = () => {
+  let selection = [];
   for (engine of document.getElementsByTagName('INPUT')) {
-    if (engine.value.includes("engine") && engine.checked) engineselection.push(engine.value.slice(7));
+    if (engine.value.includes("engine") && engine.checked) selection.push(engine.value.slice(7));
   }
-  if (e.target.classList.contains("search")) {
-    browser.tabs.query({active: true, currentWindow: true})
-    .then(search);
-  } else if (e.target.classList.contains("default")) {
-    browser.tabs.query({active: true, currentWindow: true})
-    .then(saveselection);
-  } else if (e.target.classList.contains("image")) {
-    browser.tabs.query({active: true, currentWindow: true})
-    .then(searchimage);
-  }
+  return selection;
+}
+
+const saveselection = () => {
+  try {
+    localStorage.removeItem('defaultengines');
+  } catch {}
+    localStorage.setItem('defaultengines', engineselection());
+}
+
+
+document.getElementById("searchbox").addEventListener("keypress", key => {
+  if (event.key == "Enter") search();
+});
+
+document.addEventListener("click", e => {
+  if (e.target.classList.contains("search")) search();
+  else if (e.target.classList.contains("default")) saveselection();
 });
