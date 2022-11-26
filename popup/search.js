@@ -114,6 +114,7 @@ const searchboxaspresetname = () => {
   let textbox = document.getElementById("searchbox");
   textbox.setAttribute("placeholder", "New preset name…");
   deselectengines();
+  document.getElementById("searchbox").focus();
 }
 
 const resetsearchbox = (clearText = false) => {
@@ -146,7 +147,8 @@ const saveselection = () => {
   savepreset(engineselection(), name);
 }
 
-const onpresetselected = (value) => {
+const onpresetselected = (event) => {
+  let value = document.getElementById("presets").value;
   if (value != "newPreset")
     localStorage.setItem("defaultPreset", value);
   resetsearchbox();
@@ -157,8 +159,6 @@ const onpresetselected = (value) => {
     searchboxaspresetname();
   else
     enablepresetbyname(value);
-
-  document.getElementById("searchbox").focus();
 }
 
 const removefromarray = (array, item) => {
@@ -181,6 +181,11 @@ document.getElementById("searchbox").addEventListener("keypress", key => {
   if (event.key == "Enter") search();
 });
 
+document.addEventListener("change", e => {
+  if (e.target.id == "presets")
+    onpresetselected();
+})
+
 document.addEventListener("click", e => {
   if (e.target.classList.contains("search"))
     search();
@@ -188,7 +193,4 @@ document.addEventListener("click", e => {
     saveselection();
   else if (e.target.classList.contains("remove"))
     removecurrentpreset();
-  else if (e.target.tagName == "OPTION") {
-    onpresetselected(e.target.getAttribute("value"));
-  }
 });
