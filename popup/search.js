@@ -78,16 +78,11 @@ const savepreset = (preset, name) => {
 
   try { localStorage.removeItem('preset_' + presetName); } catch {}
 
-  let sanitizedPresets = presets.filter((thisName, i) =>
-    {
-      return (presets.indexOf(thisName) === i)
-        && (thisName != name);
-    });
-
-  sanitizedPresets.push(presetName);
+  presets = removefromarray(removeredundantitems(presets), presetName);
+  presets.push(presetName);
 
   localStorage.setItem('preset_' + presetName, preset);
-  localStorage.setItem('presets', sanitizedPresets);
+  localStorage.setItem('presets', presets);
 
   // Update UI & listed presets
   resetsearchbox(true);
@@ -95,11 +90,28 @@ const savepreset = (preset, name) => {
   enablepresetbyname(name);
 }
 
+const removecurrentpreset = () => {
+  let presetName = document.getElementById("presets").value;
+  if (presetName == "noPreset" || presetName == "newPreset")
+    return;
+
+  try {
+    let presets = localStorage.getItem('presets').split(',');
+    localStorage.removeItem('preset_' + presetName);
+    localStorage.setItem('presets', removefromarray(presets, presetName));
+  }
+  catch {}
+
+  deselectengines();
+  populatepresets();
+  document.getElementById("presets").value = "noPreset";
+}
+
+
 // Search-box is also used for setting the name of new
 // presets; this sets the placeholder accordingly
 const searchboxaspresetname = () => {
   let textbox = document.getElementById("searchbox");
-  textbox.focus();
   textbox.setAttribute("placeholder", "New preset name…");
   deselectengines();
 }
@@ -145,6 +157,22 @@ const onpresetselected = (value) => {
     searchboxaspresetname();
   else
     enablepresetbyname(value);
+
+  document.getElementById("searchbox").focus();
+}
+
+const removefromarray = (array, item) => {
+  return array.filter((testItem, index) =>
+    {
+      return testItem != item;
+    });
+}
+
+const removeredundantitems = (array) => {
+  return array.filter((item, index) =>
+    {
+      return (array.indexOf(item) === index);
+    })
 }
 
 browser.search.get().then(populateengines);
@@ -156,8 +184,10 @@ document.getElementById("searchbox").addEventListener("keypress", key => {
 document.addEventListener("click", e => {
   if (e.target.classList.contains("search"))
     search();
-  else if (e.target.classList.contains("default"))
+  else if (e.target.classList.contains("save"))
     saveselection();
+  else if (e.target.classList.contains("remove"))
+    removecurrentpreset();
   else if (e.target.tagName == "OPTION") {
     onpresetselected(e.target.getAttribute("value"));
   }
